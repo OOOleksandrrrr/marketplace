@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_02_processing" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_02_processing" name="Обработка данных · Processing" isExecutable="false">
+    <bpmn:documentation>Создание и отслеживание задания обработки существующих данных; это не обработка снимков внутри поставки Tasking.
+Проверка статуса вручную и завершение неуспешной попытки — [A]. Повторный запуск является новым экземпляром процесса. Ветка ошибок объединяет Unlicensed, Rejected, Not valid и Failed: причины и действия приведены в README. Поддерживаются один или два входа в зависимости от процесса; схема обобщает оба варианта. Viewer не может запускать задания.
+Источники: https://docs.up42.com/processing/run; https://docs.up42.com/processing/monitor; https://docs.up42.com/processing/download
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="UP42 · видимое поведение платформы">
+        <bpmn:flowNodeRef>result</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>validate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>status</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>g</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Заказчик">
+        <bpmn:flowNodeRef>params</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>eula</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>download</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>wait</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fail</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>select</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>err</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Данные в хранилище">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="select" name="Выбрать процесс и входные элементы">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="validate" name="Показать совместимость входов">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="g" name="Входы совместимы?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Исключить или заменить несовместимые входы">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="params" name="Задать параметры и проверить стоимость">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="eula" name="Принять EULA; создать задания">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="run" name="Показать состояние задания">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="status" name="Состояние задания?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="wait" name="Позже проверить статус [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="fail" name="Устранить причину; решить о новом запуске [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="err" name="Запуск не завершён">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="result" name="Списать кредиты; добавить результат в хранилище">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="download" name="Открыть результат и скачать активы">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="end" name="Результат получен">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="select" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="select" targetRef="validate" />
+    <bpmn:sequenceFlow id="Flow_2" name="" sourceRef="validate" targetRef="g" />
+    <bpmn:sequenceFlow id="Flow_3" name="Нет" sourceRef="g" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_4" name="" sourceRef="fix" targetRef="select" />
+    <bpmn:sequenceFlow id="Flow_5" name="Да" sourceRef="g" targetRef="params" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="params" targetRef="eula" />
+    <bpmn:sequenceFlow id="Flow_7" name="" sourceRef="eula" targetRef="run" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="run" targetRef="status" />
+    <bpmn:sequenceFlow id="Flow_9" name="В работе" sourceRef="status" targetRef="wait" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="wait" targetRef="run" />
+    <bpmn:sequenceFlow id="Flow_11" name="Ошибка / отказ" sourceRef="status" targetRef="fail" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="fail" targetRef="err" />
+    <bpmn:sequenceFlow id="Flow_13" name="Completed" sourceRef="status" targetRef="result" />
+    <bpmn:sequenceFlow id="Flow_14" name="" sourceRef="result" targetRef="download" />
+    <bpmn:sequenceFlow id="Flow_15" name="" sourceRef="download" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_02_processing">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1830" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1830" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="225" y="216" width="110" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_params" bpmnElement="params">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_eula" bpmnElement="eula">
+        <dc:Bounds x="1092" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_result" bpmnElement="result">
+        <dc:Bounds x="1317" y="749" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="262" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="233" y="376" width="95" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_g" bpmnElement="g" isMarkerVisible="true">
+        <dc:Bounds x="703" y="663" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="697" y="633" width="106" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_download" bpmnElement="download">
+        <dc:Bounds x="952" y="269" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_run" bpmnElement="run">
+        <dc:Bounds x="1102" y="539" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_status" bpmnElement="status" isMarkerVisible="true">
+        <dc:Bounds x="1553" y="613" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1607" y="653" width="106" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_err" bpmnElement="err">
+        <dc:Bounds x="1822" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1789" y="216" width="103" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_wait" bpmnElement="wait">
+        <dc:Bounds x="1752" y="329" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fail" bpmnElement="fail">
+        <dc:Bounds x="1482" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="582" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_select" bpmnElement="select">
+        <dc:Bounds x="582" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_validate" bpmnElement="validate">
+        <dc:Bounds x="442" y="709" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="582" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="670" y="149" />
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="390" y="120" />
+        <di:waypoint x="390" y="750" />
+        <di:waypoint x="442" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="618" y="750" />
+        <di:waypoint x="730" y="750" />
+        <di:waypoint x="730" y="717" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="703" y="690" />
+        <di:waypoint x="670" y="690" />
+        <di:waypoint x="670" y="391" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="640" y="673" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="670" y="309" />
+        <di:waypoint x="670" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="757" y="690" />
+        <di:waypoint x="840" y="690" />
+        <di:waypoint x="840" y="190" />
+        <di:waypoint x="867" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="856" y="673" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="1043" y="190" />
+        <di:waypoint x="1092" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="1190" y="231" />
+        <di:waypoint x="1190" y="539" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1190" y="621" />
+        <di:waypoint x="1190" y="640" />
+        <di:waypoint x="1553" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1607" y="640" />
+        <di:waypoint x="1850" y="640" />
+        <di:waypoint x="1850" y="411" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1859" y="587" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1752" y="370" />
+        <di:waypoint x="1310" y="370" />
+        <di:waypoint x="1310" y="580" />
+        <di:waypoint x="1278" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1580" y="613" />
+        <di:waypoint x="1580" y="231" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1591" y="553" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1658" y="190" />
+        <di:waypoint x="1822" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_13" bpmnElement="Flow_13">
+        <di:waypoint x="1580" y="667" />
+        <di:waypoint x="1580" y="710" />
+        <di:waypoint x="1405" y="710" />
+        <di:waypoint x="1405" y="749" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1431" y="723" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_14" bpmnElement="Flow_14">
+        <di:waypoint x="1317" y="790" />
+        <di:waypoint x="1040" y="790" />
+        <di:waypoint x="1040" y="351" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_15" bpmnElement="Flow_15">
+        <di:waypoint x="1040" y="269" />
+        <di:waypoint x="1040" y="250" />
+        <di:waypoint x="330" y="250" />
+        <di:waypoint x="330" y="350" />
+        <di:waypoint x="298" y="350" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

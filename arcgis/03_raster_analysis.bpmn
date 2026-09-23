@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_03_raster_analysis" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_03_raster_analysis" name="ArcGIS · растровый анализ" isExecutable="false">
+    <bpmn:documentation>Запуск инструмента raster analysis или raster function в Map Viewer с оценкой кредитов и сохранением результата.
+Выбор реакции на ошибку — аналитический. Документация подтверждает оценку кредитов, запуск, добавление результата в карту и запись успешных/неуспешных запусков в analysis history. Исполнение отдельных алгоритмов не моделируется.
+Источники: https://docs.up42.com/https://doc.arcgis.com/en/arcgis-online/analyze/perform-analysis-mv.htm
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="ArcGIS · видимое поведение платформы">
+        <bpmn:flowNodeRef>result</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>process</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ok</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>status</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fail</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Пользователь ArcGIS">
+        <bpmn:flowNodeRef>choose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>input</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>estimate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>rights</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>stop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Есть imagery или image service">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="rights" name="Открыть Analysis и проверить права">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="ok" name="Analysis доступен?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="stop" name="Нужны права, кредиты или настройка организации">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="choose" name="Выбрать tool или raster function">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="input" name="Выбрать входы и параметры">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="estimate" name="Проверить environments и оценить кредиты">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="run" name="Запустить анализ">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="process" name="Показать состояние в analysis history">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="status" name="Запуск успешен?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Исправить входы или параметры [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="fail" name="Результат не создан">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="result" name="Добавить output layer или item">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="end" name="Результат доступен">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="rights" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="rights" targetRef="ok" />
+    <bpmn:sequenceFlow id="Flow_2" name="Нет" sourceRef="ok" targetRef="stop" />
+    <bpmn:sequenceFlow id="Flow_3" name="Да" sourceRef="ok" targetRef="choose" />
+    <bpmn:sequenceFlow id="Flow_4" name="" sourceRef="choose" targetRef="input" />
+    <bpmn:sequenceFlow id="Flow_5" name="" sourceRef="input" targetRef="estimate" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="estimate" targetRef="run" />
+    <bpmn:sequenceFlow id="Flow_7" name="" sourceRef="run" targetRef="process" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="process" targetRef="status" />
+    <bpmn:sequenceFlow id="Flow_9" name="Нет" sourceRef="status" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="fix" targetRef="fail" />
+    <bpmn:sequenceFlow id="Flow_11" name="Да" sourceRef="status" targetRef="result" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="result" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_03_raster_analysis">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="201" y="216" width="159" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_stop" bpmnElement="stop">
+        <dc:Bounds x="262" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="211" y="376" width="139" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_choose" bpmnElement="choose">
+        <dc:Bounds x="642" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_input" bpmnElement="input">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_estimate" bpmnElement="estimate">
+        <dc:Bounds x="1092" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="1542" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_result" bpmnElement="result">
+        <dc:Bounds x="1092" y="749" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="712" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="680" y="376" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ok" bpmnElement="ok" isMarkerVisible="true">
+        <dc:Bounds x="463" y="633" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="442" y="695" width="97" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_rights" bpmnElement="rights">
+        <dc:Bounds x="372" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_run" bpmnElement="run">
+        <dc:Bounds x="1342" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_status" bpmnElement="status" isMarkerVisible="true">
+        <dc:Bounds x="1373" y="543" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1356" y="519" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_process" bpmnElement="process">
+        <dc:Bounds x="1082" y="529" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fail" bpmnElement="fail">
+        <dc:Bounds x="1612" y="762" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1578" y="806" width="104" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="372" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="548" y="190" />
+        <di:waypoint x="570" y="190" />
+        <di:waypoint x="570" y="530" />
+        <di:waypoint x="490" y="530" />
+        <di:waypoint x="490" y="633" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="463" y="660" />
+        <di:waypoint x="390" y="660" />
+        <di:waypoint x="390" y="350" />
+        <di:waypoint x="298" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="643" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="517" y="660" />
+        <di:waypoint x="620" y="660" />
+        <di:waypoint x="620" y="190" />
+        <di:waypoint x="642" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="533" y="643" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="818" y="190" />
+        <di:waypoint x="867" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="1043" y="190" />
+        <di:waypoint x="1092" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="1268" y="190" />
+        <di:waypoint x="1342" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="1430" y="231" />
+        <di:waypoint x="1430" y="390" />
+        <di:waypoint x="1170" y="390" />
+        <di:waypoint x="1170" y="529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1258" y="570" />
+        <di:waypoint x="1373" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1427" y="570" />
+        <di:waypoint x="1510" y="570" />
+        <di:waypoint x="1510" y="350" />
+        <di:waypoint x="1542" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1440" y="553" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1630" y="391" />
+        <di:waypoint x="1630" y="762" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1400" y="597" />
+        <di:waypoint x="1400" y="790" />
+        <di:waypoint x="1268" y="790" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1403" y="630" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1092" y="790" />
+        <di:waypoint x="840" y="790" />
+        <di:waypoint x="840" y="350" />
+        <di:waypoint x="748" y="350" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

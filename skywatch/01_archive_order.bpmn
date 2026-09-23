@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_01_archive_order" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_01_archive_order" name="SkyWatch · Archive search и заказ" isExecutable="false">
+    <bpmn:documentation>Три документированных шага EarthCache: search, evaluate results, create pipeline.
+Пригодность результата и исправление лимита — решения клиента. Документация требует search_id, выбранный result_id, согласованные AOI/даты, project id, max_cost не ниже стоимости и фиксированный GeoTIFF output id. Внутреннее размещение у поставщика не моделируется.
+Источники: https://docs.up42.com/https://docs.skywatch.com/docs/archive/archive-workflow
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="SkyWatch EarthCache · API">
+        <bpmn:flowNodeRef>results</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>order</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>search</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Заказчик / API-клиент">
+        <bpmn:flowNodeRef>choose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>req</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>get</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>change</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>found</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>cost</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Нужны архивные данные">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="req" name="Передать AOI, прошлые даты, resolution и фильтры">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="search" name="Создать search и вернуть search_id">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="get" name="Запросить search results">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="results" name="Вернуть сцены, coverage, cost и preview">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="found" name="Есть подходящий result? [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="change" name="Изменить запрос [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="choose" name="Выбрать result_id и project">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="cost" name="max_cost достаточен?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Исправить лимит или выбор">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="create" name="Создать pipeline с GeoTIFF output">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="order" name="Создать заказ">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="end" name="К результатам · 03">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="req" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="req" targetRef="search" />
+    <bpmn:sequenceFlow id="Flow_2" name="" sourceRef="search" targetRef="get" />
+    <bpmn:sequenceFlow id="Flow_3" name="" sourceRef="get" targetRef="results" />
+    <bpmn:sequenceFlow id="Flow_4" name="" sourceRef="results" targetRef="found" />
+    <bpmn:sequenceFlow id="Flow_5" name="Нет" sourceRef="found" targetRef="change" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="change" targetRef="req" />
+    <bpmn:sequenceFlow id="Flow_7" name="Да" sourceRef="found" targetRef="choose" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="choose" targetRef="cost" />
+    <bpmn:sequenceFlow id="Flow_9" name="Нет" sourceRef="cost" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="fix" targetRef="choose" />
+    <bpmn:sequenceFlow id="Flow_11" name="Да" sourceRef="cost" targetRef="create" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="create" targetRef="order" />
+    <bpmn:sequenceFlow id="Flow_13" name="" sourceRef="order" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_01_archive_order">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="215" y="216" width="130" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_results" bpmnElement="results">
+        <dc:Bounds x="642" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_found" bpmnElement="found" isMarkerVisible="true">
+        <dc:Bounds x="928" y="163" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="883" y="139" width="143" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_choose" bpmnElement="choose">
+        <dc:Bounds x="1092" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_create" bpmnElement="create">
+        <dc:Bounds x="1542" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_order" bpmnElement="order">
+        <dc:Bounds x="1542" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="1612" y="772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1583" y="816" width="95" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_req" bpmnElement="req">
+        <dc:Bounds x="362" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_search" bpmnElement="search">
+        <dc:Bounds x="362" y="539" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_get" bpmnElement="get">
+        <dc:Bounds x="632" y="129" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_change" bpmnElement="change">
+        <dc:Bounds x="902" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="1312" y="339" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_cost" bpmnElement="cost" isMarkerVisible="true">
+        <dc:Bounds x="1373" y="163" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1343" y="139" width="114" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="362" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="450" y="231" />
+        <di:waypoint x="450" y="539" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="538" y="580" />
+        <di:waypoint x="600" y="580" />
+        <di:waypoint x="600" y="170" />
+        <di:waypoint x="632" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="808" y="170" />
+        <di:waypoint x="850" y="170" />
+        <di:waypoint x="850" y="280" />
+        <di:waypoint x="730" y="280" />
+        <di:waypoint x="730" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="818" y="590" />
+        <di:waypoint x="870" y="590" />
+        <di:waypoint x="870" y="190" />
+        <di:waypoint x="928" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="955" y="217" />
+        <di:waypoint x="955" y="263" />
+        <di:waypoint x="990" y="263" />
+        <di:waypoint x="990" y="309" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="962" y="216" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="902" y="350" />
+        <di:waypoint x="580" y="350" />
+        <di:waypoint x="580" y="190" />
+        <di:waypoint x="538" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="982" y="190" />
+        <di:waypoint x="1092" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1003" y="163" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1268" y="190" />
+        <di:waypoint x="1373" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1400" y="217" />
+        <di:waypoint x="1400" y="339" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1368" y="233" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1312" y="380" />
+        <di:waypoint x="1180" y="380" />
+        <di:waypoint x="1180" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1427" y="190" />
+        <di:waypoint x="1542" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1443" y="163" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1630" y="231" />
+        <di:waypoint x="1630" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_13" bpmnElement="Flow_13">
+        <di:waypoint x="1630" y="631" />
+        <di:waypoint x="1630" y="772" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

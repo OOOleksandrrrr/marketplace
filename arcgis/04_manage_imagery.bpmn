@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_04_manage_imagery" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_04_manage_imagery" name="ArcGIS · управление hosted imagery layer" isExecutable="false">
+    <bpmn:documentation>Изменение метаданных и настроек уже опубликованного imagery layer.
+Выбор категории и повтор настройки — аналитическая навигация. Внутреннее применение не раскрывается. Владелец или администратор меняет свойства; отдельные dynamic-настройки включают размеры запросов, resampling, compression, processing templates и mosaic/catalog.
+Источники: https://docs.up42.com/https://doc.arcgis.com/en/arcgis-online/manage-data/hosted-imagery-layer-settings.htm
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="ArcGIS · видимое поведение платформы">
+        <bpmn:flowNodeRef>apply</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>dynamic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>unavailable</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>again</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Пользователь ArcGIS">
+        <bpmn:flowNodeRef>meta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>save</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>open</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>settings</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>general</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>kind</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Hosted imagery layer существует">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="open" name="Открыть item page">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="kind" name="Что изменить? [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="meta" name="Изменить название, описание, теги или extent">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="general" name="Изменить status или защиту от удаления">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="dynamic" name="Dynamic layer?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="settings" name="Настроить requests, compression, mosaic или templates">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="unavailable" name="Dynamic-настройки неприменимы">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="save" name="Сохранить изменения">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="apply" name="Применить настройки слоя">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="again" name="Нужны ещё изменения? [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="end" name="Настройки обновлены">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="open" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="open" targetRef="kind" />
+    <bpmn:sequenceFlow id="Flow_2" name="Метаданные" sourceRef="kind" targetRef="meta" />
+    <bpmn:sequenceFlow id="Flow_3" name="Общие" sourceRef="kind" targetRef="general" />
+    <bpmn:sequenceFlow id="Flow_4" name="Dynamic" sourceRef="kind" targetRef="dynamic" />
+    <bpmn:sequenceFlow id="Flow_5" name="" sourceRef="meta" targetRef="save" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="general" targetRef="save" />
+    <bpmn:sequenceFlow id="Flow_7" name="Да" sourceRef="dynamic" targetRef="settings" />
+    <bpmn:sequenceFlow id="Flow_8" name="Нет" sourceRef="dynamic" targetRef="unavailable" />
+    <bpmn:sequenceFlow id="Flow_9" name="" sourceRef="settings" targetRef="save" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="save" targetRef="apply" />
+    <bpmn:sequenceFlow id="Flow_11" name="" sourceRef="apply" targetRef="again" />
+    <bpmn:sequenceFlow id="Flow_12" name="Да" sourceRef="again" targetRef="kind" />
+    <bpmn:sequenceFlow id="Flow_13" name="Нет" sourceRef="again" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_04_manage_imagery">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_meta" bpmnElement="meta">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_save" bpmnElement="save">
+        <dc:Bounds x="1317" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_again" bpmnElement="again" isMarkerVisible="true">
+        <dc:Bounds x="1603" y="563" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1478.5" y="553" width="141" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="1612" y="772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1573" y="816" width="114" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_kind" bpmnElement="kind" isMarkerVisible="true">
+        <dc:Bounds x="663" y="203" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="584" y="203" width="92" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_dynamic" bpmnElement="dynamic" isMarkerVisible="true">
+        <dc:Bounds x="813" y="563" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="727" y="583" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_unavailable" bpmnElement="unavailable">
+        <dc:Bounds x="1152" y="642" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1083" y="686" width="174" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_open" bpmnElement="open">
+        <dc:Bounds x="362" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_settings" bpmnElement="settings">
+        <dc:Bounds x="1082" y="209" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_general" bpmnElement="general">
+        <dc:Bounds x="1317" y="329" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_apply" bpmnElement="apply">
+        <dc:Bounds x="1292" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="252" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="187" y="216" width="166" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="697" y="210" />
+        <di:waypoint x="792" y="210" />
+        <di:waypoint x="792" y="190" />
+        <di:waypoint x="867" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="707" y="183" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="1043" y="190" />
+        <di:waypoint x="1070" y="190" />
+        <di:waypoint x="1070" y="130" />
+        <di:waypoint x="1405" y="130" />
+        <di:waypoint x="1405" y="149" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="1405" y="329" />
+        <di:waypoint x="1405" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1258" y="250" />
+        <di:waypoint x="1293" y="250" />
+        <di:waypoint x="1293" y="190" />
+        <di:waypoint x="1317" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1493" y="190" />
+        <di:waypoint x="1520" y="190" />
+        <di:waypoint x="1520" y="510" />
+        <di:waypoint x="1380" y="510" />
+        <di:waypoint x="1380" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1468" y="590" />
+        <di:waypoint x="1603" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1630" y="563" />
+        <di:waypoint x="1630" y="110" />
+        <di:waypoint x="690" y="110" />
+        <di:waypoint x="690" y="203" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1643" y="543" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_13" bpmnElement="Flow_13">
+        <di:waypoint x="1630" y="617" />
+        <di:waypoint x="1630" y="772" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1600" y="623" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="538" y="190" />
+        <di:waypoint x="580" y="190" />
+        <di:waypoint x="580" y="230" />
+        <di:waypoint x="663" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="697" y="250" />
+        <di:waypoint x="840" y="250" />
+        <di:waypoint x="840" y="370" />
+        <di:waypoint x="1317" y="370" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="711" y="253" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="690" y="257" />
+        <di:waypoint x="690" y="530" />
+        <di:waypoint x="840" y="530" />
+        <di:waypoint x="840" y="563" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="628" y="243" width="43" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="867" y="590" />
+        <di:waypoint x="1010" y="590" />
+        <di:waypoint x="1010" y="420" />
+        <di:waypoint x="1170" y="420" />
+        <di:waypoint x="1170" y="291" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="873" y="563" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="840" y="617" />
+        <di:waypoint x="840" y="660" />
+        <di:waypoint x="1152" y="660" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="623" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="288" y="190" />
+        <di:waypoint x="362" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

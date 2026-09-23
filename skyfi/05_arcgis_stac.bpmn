@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_05_arcgis_stac" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_05_arcgis_stac" name="SkyFi → ArcGIS Pro · STAC catalog" isExecutable="false">
+    <bpmn:documentation>Подключение заказанного SkyFi imagery к ArcGIS Pro через STAC endpoint.
+Выбор фильтра — аналитический. Документация задаёт endpoint https://app.skyfi.com/stac и header x-skyfi-api-key. По умолчанию каталог может включать заказы организации; фильтр SkyFi User ID ограничивает выдачу своими заказами. API key следует защищать как пароль.
+Источники: https://docs.up42.com/https://skyfi.com/en/support/integrations/arcgis/stac-catalog
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="SkyFi · видимое поведение платформы">
+        <bpmn:flowNodeRef>connect</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>items</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ok</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Заказчик">
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>browse</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>filter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>use</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>new</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>enter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>mine</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Есть SkyFi API key">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="new" name="Создать New STAC Connection в ArcGIS Pro">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="enter" name="Указать STAC URL и x-skyfi-api-key">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="connect" name="Аутентифицировать и открыть catalog">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="ok" name="Соединение успешно?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Проверить endpoint, key и доступ">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="browse" name="Открыть Explore STAC и применить filters">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="items" name="Показать imagery организации">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="mine" name="Только свои orders? [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="filter" name="Фильтровать по SkyFi User ID">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="use" name="Добавить нужные assets в проект">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="end" name="Imagery доступно в ArcGIS Pro">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="new" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="new" targetRef="enter" />
+    <bpmn:sequenceFlow id="Flow_2" name="" sourceRef="enter" targetRef="connect" />
+    <bpmn:sequenceFlow id="Flow_3" name="" sourceRef="connect" targetRef="ok" />
+    <bpmn:sequenceFlow id="Flow_4" name="Нет" sourceRef="ok" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_5" name="" sourceRef="fix" targetRef="enter" />
+    <bpmn:sequenceFlow id="Flow_6" name="Да" sourceRef="ok" targetRef="browse" />
+    <bpmn:sequenceFlow id="Flow_7" name="" sourceRef="browse" targetRef="items" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="items" targetRef="mine" />
+    <bpmn:sequenceFlow id="Flow_9" name="Да" sourceRef="mine" targetRef="filter" />
+    <bpmn:sequenceFlow id="Flow_10" name="Нет" sourceRef="mine" targetRef="use" />
+    <bpmn:sequenceFlow id="Flow_11" name="" sourceRef="filter" targetRef="use" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="use" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_05_arcgis_stac">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="233" y="216" width="95" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_connect" bpmnElement="connect">
+        <dc:Bounds x="642" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ok" bpmnElement="ok" isMarkerVisible="true">
+        <dc:Bounds x="928" y="563" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="897" y="625" width="117" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="867" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_browse" bpmnElement="browse">
+        <dc:Bounds x="1092" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_items" bpmnElement="items">
+        <dc:Bounds x="1092" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_mine" bpmnElement="mine" isMarkerVisible="true">
+        <dc:Bounds x="1378" y="163" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1345" y="139" width="119" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_filter" bpmnElement="filter">
+        <dc:Bounds x="1542" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_use" bpmnElement="use">
+        <dc:Bounds x="1317" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_new" bpmnElement="new">
+        <dc:Bounds x="362" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_enter" bpmnElement="enter">
+        <dc:Bounds x="592" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="1387" y="612" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1326" y="656" width="158" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="362" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="538" y="190" />
+        <di:waypoint x="592" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="680" y="231" />
+        <di:waypoint x="680" y="280" />
+        <di:waypoint x="730" y="280" />
+        <di:waypoint x="730" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="818" y="590" />
+        <di:waypoint x="928" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="955" y="563" />
+        <di:waypoint x="955" y="391" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="969" y="543" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="955" y="309" />
+        <di:waypoint x="955" y="190" />
+        <di:waypoint x="768" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="982" y="590" />
+        <di:waypoint x="1060" y="590" />
+        <di:waypoint x="1060" y="190" />
+        <di:waypoint x="1092" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="983" y="593" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="1180" y="231" />
+        <di:waypoint x="1180" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1268" y="590" />
+        <di:waypoint x="1290" y="590" />
+        <di:waypoint x="1290" y="190" />
+        <di:waypoint x="1378" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1432" y="190" />
+        <di:waypoint x="1542" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1443" y="162" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1405" y="217" />
+        <di:waypoint x="1405" y="309" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1410" y="223" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1630" y="231" />
+        <di:waypoint x="1630" y="350" />
+        <di:waypoint x="1493" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1405" y="391" />
+        <di:waypoint x="1405" y="612" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

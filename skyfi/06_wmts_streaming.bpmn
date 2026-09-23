@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_06_wmts_streaming" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_06_wmts_streaming" name="SkyFi → GIS · WMTS streaming" isExecutable="false">
+    <bpmn:documentation>Подключение всего заказанного каталога как WMTS layers в ArcGIS Pro/Online/Enterprise или другом совместимом GIS.
+Выбор клиента — пользовательский. Один WMTS link покрывает весь ordered catalog организации; новые поставки появляются автоматически. Публичная документация указывает доступность для Pro и Enterprise plans, а visibility следует структуре организации. Схема не расширяет права sharing.
+Источники: https://docs.up42.com/https://skyfi.com/en/support/integrations/arcgis/wmts-streaming
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="SkyFi · видимое поведение платформы">
+        <bpmn:flowNodeRef>auto</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ok</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>connect</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Заказчик">
+        <bpmn:flowNodeRef>pro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>other</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>add</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>copy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>target</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>online</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Есть completed order и подходящий plan">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="copy" name="Скопировать WMTS Service Link из Order Details">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="target" name="Куда подключить?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="pro" name="Создать New WMTS Server в ArcGIS Pro">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="online" name="Add layer from URL в Map Viewer">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="other" name="Добавить WMTS в совместимом GIS">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="connect" name="Вернуть catalog layers и tiles on demand">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="ok" name="Сервис доступен?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Проверить plan, URL и параметры доступа">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="add" name="Выбрать layer и добавить на карту">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="auto" name="Показывать новые delivered imagery в том же connection">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="end" name="Каталог подключён">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="copy" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="copy" targetRef="target" />
+    <bpmn:sequenceFlow id="Flow_2" name="ArcGIS Pro" sourceRef="target" targetRef="pro" />
+    <bpmn:sequenceFlow id="Flow_3" name="ArcGIS Online / Enterprise" sourceRef="target" targetRef="online" />
+    <bpmn:sequenceFlow id="Flow_4" name="Другое GIS" sourceRef="target" targetRef="other" />
+    <bpmn:sequenceFlow id="Flow_5" name="" sourceRef="pro" targetRef="connect" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="online" targetRef="connect" />
+    <bpmn:sequenceFlow id="Flow_7" name="" sourceRef="other" targetRef="connect" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="connect" targetRef="ok" />
+    <bpmn:sequenceFlow id="Flow_9" name="Нет" sourceRef="ok" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="fix" targetRef="copy" />
+    <bpmn:sequenceFlow id="Flow_11" name="Да" sourceRef="ok" targetRef="add" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="add" targetRef="auto" />
+    <bpmn:sequenceFlow id="Flow_13" name="" sourceRef="auto" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_06_wmts_streaming">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="189" y="216" width="182" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_target" bpmnElement="target" isMarkerVisible="true">
+        <dc:Bounds x="703" y="163" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="633" y="213" width="94" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_pro" bpmnElement="pro">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_other" bpmnElement="other">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ok" bpmnElement="ok" isMarkerVisible="true">
+        <dc:Bounds x="1378" y="563" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1303" y="613" width="94" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_add" bpmnElement="add">
+        <dc:Bounds x="1542" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_auto" bpmnElement="auto">
+        <dc:Bounds x="1542" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="1612" y="772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1581" y="816" width="99" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_copy" bpmnElement="copy">
+        <dc:Bounds x="382" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_online" bpmnElement="online">
+        <dc:Bounds x="782" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_connect" bpmnElement="connect">
+        <dc:Bounds x="952" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="1242" y="179" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="382" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="558" y="190" />
+        <di:waypoint x="703" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="757" y="190" />
+        <di:waypoint x="867" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="762" y="173" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="730" y="217" />
+        <di:waypoint x="730" y="350" />
+        <di:waypoint x="782" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="741" y="256" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="730" y="163" />
+        <di:waypoint x="730" y="120" />
+        <di:waypoint x="955" y="120" />
+        <di:waypoint x="955" y="149" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="734" y="133" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="955" y="231" />
+        <di:waypoint x="955" y="270" />
+        <di:waypoint x="1040" y="270" />
+        <di:waypoint x="1040" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="870" y="391" />
+        <di:waypoint x="870" y="590" />
+        <di:waypoint x="952" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="1043" y="190" />
+        <di:waypoint x="1170" y="190" />
+        <di:waypoint x="1170" y="590" />
+        <di:waypoint x="1128" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1040" y="631" />
+        <di:waypoint x="1040" y="710" />
+        <di:waypoint x="1405" y="710" />
+        <di:waypoint x="1405" y="617" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1378" y="590" />
+        <di:waypoint x="1330" y="590" />
+        <di:waypoint x="1330" y="261" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1340" y="563" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1405" y="563" />
+        <di:waypoint x="1405" y="500" />
+        <di:waypoint x="1450" y="500" />
+        <di:waypoint x="1450" y="190" />
+        <di:waypoint x="1542" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1413" y="553" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1330" y="179" />
+        <di:waypoint x="1330" y="100" />
+        <di:waypoint x="470" y="100" />
+        <di:waypoint x="470" y="149" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1630" y="231" />
+        <di:waypoint x="1630" y="549" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_13" bpmnElement="Flow_13">
+        <di:waypoint x="1630" y="631" />
+        <di:waypoint x="1630" y="772" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

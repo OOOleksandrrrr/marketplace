@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_06_roles_access" targetNamespace="https://example.org/up42/analytical-models" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_06_roles_access" name="SkyWatch · роли и доступ к заказам" isExecutable="false">
+    <bpmn:documentation>Назначение пользователя проекту и роли для чтения либо создания заказов.
+Выбор роли — аналитический. Reader не создаёт заказы; Creator создаёт и управляет своими заказами и видит назначенные проекты; Admin управляет пользователями кроме Super Admin; Super Admin имеет полный организационный контроль. Пользователей назначают проектам Admin или Super Admin.
+Источники: https://docs.up42.com/https://docs.skywatch.com/docs/governance/roles-and-permissions; https://docs.up42.com/https://docs.skywatch.com/docs/projects/projects
+[A] — аналитическое решение. Все развилки и порядок действий являются моделью, а не внутренней реализацией UP42.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="Lane_1" name="SkyWatch EarthCache · API">
+        <bpmn:flowNodeRef>apply</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ok</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0" name="Заказчик / API-клиент">
+        <bpmn:flowNodeRef>admin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>reader</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>creator</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>manage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>role</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="s" name="Нужно выдать доступ">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="admin" name="Выбрать пользователя и project">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="role" name="Какая роль нужна? [A]">
+      <bpmn:documentation>Аналитическая композиция/решение заказчика. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="reader" name="Назначить Reader">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="creator" name="Назначить Creator">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="manage" name="Назначить Admin / Super Admin">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="check" name="Проверить полномочия назначающего">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="ok" name="Назначение разрешено?">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="fix" name="Скорректировать роль или обратиться к Super Admin">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="apply" name="Обновить пользователя и project membership">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="end" name="Доступ обновлён">
+      <bpmn:documentation>Укрупнённое отображение пользовательского сценария. См. документацию процесса и README.</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0" name="" sourceRef="s" targetRef="admin" />
+    <bpmn:sequenceFlow id="Flow_1" name="" sourceRef="admin" targetRef="role" />
+    <bpmn:sequenceFlow id="Flow_2" name="Чтение" sourceRef="role" targetRef="reader" />
+    <bpmn:sequenceFlow id="Flow_3" name="Заказы" sourceRef="role" targetRef="creator" />
+    <bpmn:sequenceFlow id="Flow_4" name="Администрирование" sourceRef="role" targetRef="manage" />
+    <bpmn:sequenceFlow id="Flow_5" name="" sourceRef="reader" targetRef="check" />
+    <bpmn:sequenceFlow id="Flow_6" name="" sourceRef="creator" targetRef="check" />
+    <bpmn:sequenceFlow id="Flow_7" name="" sourceRef="manage" targetRef="check" />
+    <bpmn:sequenceFlow id="Flow_8" name="" sourceRef="check" targetRef="ok" />
+    <bpmn:sequenceFlow id="Flow_9" name="Нет" sourceRef="ok" targetRef="fix" />
+    <bpmn:sequenceFlow id="Flow_10" name="" sourceRef="fix" targetRef="role" />
+    <bpmn:sequenceFlow id="Flow_11" name="Да" sourceRef="ok" targetRef="apply" />
+    <bpmn:sequenceFlow id="Flow_12" name="" sourceRef="apply" targetRef="end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Process_06_roles_access">
+      <bpmndi:BPMNShape id="Shape_Lane_1" bpmnElement="Lane_1" isHorizontal="true">
+        <dc:Bounds x="160" y="480" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_0" bpmnElement="Lane_0" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1570" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_s" bpmnElement="s">
+        <dc:Bounds x="262" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="225" y="216" width="111" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_admin" bpmnElement="admin">
+        <dc:Bounds x="417" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_role" bpmnElement="role" isMarkerVisible="true">
+        <dc:Bounds x="703" y="163" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="603" y="159" width="114" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_reader" bpmnElement="reader">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_creator" bpmnElement="creator">
+        <dc:Bounds x="867" y="309" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_manage" bpmnElement="manage">
+        <dc:Bounds x="867" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_apply" bpmnElement="apply">
+        <dc:Bounds x="1542" y="549" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_end" bpmnElement="end">
+        <dc:Bounds x="1612" y="772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1586" y="816" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_fix" bpmnElement="fix">
+        <dc:Bounds x="1317" y="149" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_check" bpmnElement="check">
+        <dc:Bounds x="1142" y="539" width="176" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ok" bpmnElement="ok" isMarkerVisible="true">
+        <dc:Bounds x="1378" y="543" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1342" y="605" width="127" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_0" bpmnElement="Flow_0">
+        <di:waypoint x="298" y="190" />
+        <di:waypoint x="417" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="593" y="190" />
+        <di:waypoint x="703" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="747" y="200" />
+        <di:waypoint x="830" y="200" />
+        <di:waypoint x="830" y="250" />
+        <di:waypoint x="955" y="250" />
+        <di:waypoint x="955" y="231" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="761" y="203" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="730" y="217" />
+        <di:waypoint x="730" y="350" />
+        <di:waypoint x="867" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="681" y="216" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="747" y="180" />
+        <di:waypoint x="867" y="180" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="736" y="159" width="127" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="1043" y="190" />
+        <di:waypoint x="1070" y="190" />
+        <di:waypoint x="1070" y="580" />
+        <di:waypoint x="1142" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="955" y="391" />
+        <di:waypoint x="955" y="660" />
+        <di:waypoint x="1230" y="660" />
+        <di:waypoint x="1230" y="621" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="955" y="149" />
+        <di:waypoint x="955" y="130" />
+        <di:waypoint x="1230" y="130" />
+        <di:waypoint x="1230" y="539" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1318" y="580" />
+        <di:waypoint x="1348" y="580" />
+        <di:waypoint x="1348" y="570" />
+        <di:waypoint x="1378" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_9" bpmnElement="Flow_9">
+        <di:waypoint x="1405" y="543" />
+        <di:waypoint x="1405" y="231" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1419" y="513" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_10" bpmnElement="Flow_10">
+        <di:waypoint x="1405" y="149" />
+        <di:waypoint x="1405" y="120" />
+        <di:waypoint x="730" y="120" />
+        <di:waypoint x="730" y="163" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_11" bpmnElement="Flow_11">
+        <di:waypoint x="1432" y="570" />
+        <di:waypoint x="1487" y="570" />
+        <di:waypoint x="1487" y="590" />
+        <di:waypoint x="1542" y="590" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1443" y="553" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_12" bpmnElement="Flow_12">
+        <di:waypoint x="1630" y="631" />
+        <di:waypoint x="1630" y="772" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

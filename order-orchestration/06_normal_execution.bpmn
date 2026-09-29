@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_Normal" targetNamespace="https://example.org/gias-rkd/order-orchestration" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_Normal" name="Штатное исполнение консолидированного заказа" isExecutable="false">
+    <bpmn:documentation>Аналитическая модель макета по п. 3.2.2.3 ТЗ. Действия поставщиков показаны только на уровне внешнего взаимодействия; их внутренние процессы не моделируются.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_Normal">
+      <bpmn:lane id="Lane_Normal_supplier_b" name="Поставщик B / замещающий поставщик">
+        <bpmn:flowNodeRef>N_AcceptB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_DoB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_SendB</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Normal_supplier_a" name="Поставщик A">
+        <bpmn:flowNodeRef>N_AcceptA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_DoA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_SendA</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Normal_system" name="Система-агрегатор">
+        <bpmn:flowNodeRef>N_Validate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Decompose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Rules</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Plan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Count</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Aggregate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Valid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Split</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_WaitA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_WaitB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Join</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Normal_customer" name="Пользователь">
+        <bpmn:flowNodeRef>N_Receive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Correct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Approve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Cancel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_End</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>N_Approved</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="N_Start" name="Потребность в данных">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:outgoing>NF01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="N_Request" name="Сформировать единый запрос&#10;на комплект данных">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF01</bpmn:incoming>
+      <bpmn:outgoing>NF02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="N_Validate" name="Проверить обязательные поля,&#10;АОИ, сроки и ограничения">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF02</bpmn:incoming>
+      <bpmn:incoming>NF05</bpmn:incoming>
+      <bpmn:outgoing>NF03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="N_Valid" name="Запрос корректен?">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF03</bpmn:incoming>
+      <bpmn:outgoing>NF04</bpmn:outgoing>
+      <bpmn:outgoing>NF06</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="N_Correct" name="Исправить параметры&#10;по замечаниям системы">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF04</bpmn:incoming>
+      <bpmn:outgoing>NF05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="N_Decompose" name="Декомпозировать заказ&#10;на позиции и подзаказы">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF06</bpmn:incoming>
+      <bpmn:outgoing>NF07</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="N_Rules" name="Применить правила выбора,&#10;приоритетов и ресурсов">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF07</bpmn:incoming>
+      <bpmn:outgoing>NF08</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="N_Plan" name="Рассчитать план, сроки,&#10;стоимость и объёмы">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF08</bpmn:incoming>
+      <bpmn:outgoing>NF09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="N_Approve" name="Проверить и подтвердить&#10;консолидированный заказ">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF09</bpmn:incoming>
+      <bpmn:outgoing>NF10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="N_Approved" name="Заказ подтверждён?">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF10</bpmn:incoming>
+      <bpmn:outgoing>NF11</bpmn:outgoing>
+      <bpmn:outgoing>NF12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="N_Cancel" name="Заказ не размещён">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="N_Register" name="Создать родительский заказ,&#10;подзаказы и плановые объёмы">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF12</bpmn:incoming>
+      <bpmn:outgoing>NF13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="N_Split" name="Запустить параллельно">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF13</bpmn:incoming>
+      <bpmn:outgoing>NF14</bpmn:outgoing>
+      <bpmn:outgoing>NF18</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="N_AcceptA" name="Принять подзаказ A&#10;и подтвердить условия">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF14</bpmn:incoming>
+      <bpmn:outgoing>NF15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="N_DoA" name="Исполнить подзаказ A&#10;по согласованным условиям">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF15</bpmn:incoming>
+      <bpmn:outgoing>NF16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="N_SendA" name="Передать результат A,&#10;статус и фактический объём">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF16</bpmn:incoming>
+      <bpmn:outgoing>NF17</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="N_WaitA" name="Получен результат A">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF17</bpmn:incoming>
+      <bpmn:outgoing>NF22</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_N_WaitA" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="N_AcceptB" name="Принять подзаказ B&#10;и подтвердить условия">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF18</bpmn:incoming>
+      <bpmn:outgoing>NF19</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="N_DoB" name="Исполнить подзаказ B&#10;по согласованным условиям">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF19</bpmn:incoming>
+      <bpmn:outgoing>NF20</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="N_SendB" name="Передать результат B,&#10;статус и фактический объём">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>NF20</bpmn:incoming>
+      <bpmn:outgoing>NF21</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="N_WaitB" name="Получен результат B">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF21</bpmn:incoming>
+      <bpmn:outgoing>NF23</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_N_WaitB" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:parallelGateway id="N_Join" name="Оба ответа получены">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF22</bpmn:incoming>
+      <bpmn:incoming>NF23</bpmn:incoming>
+      <bpmn:outgoing>NF24</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="N_Check" name="Проверить формат, целостность&#10;и условия исполнения">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF24</bpmn:incoming>
+      <bpmn:outgoing>NF25</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="N_Count" name="Зафиксировать принятые&#10;фактические объёмы">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF25</bpmn:incoming>
+      <bpmn:outgoing>NF26</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="N_Aggregate" name="Агрегировать файлы,&#10;метаданные и отчёт">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF26</bpmn:incoming>
+      <bpmn:outgoing>NF27</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="N_Notify" name="Сформировать итоговый статус&#10;и уведомить пользователя">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>NF27</bpmn:incoming>
+      <bpmn:outgoing>NF28</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="N_Receive" name="Получить единый комплект&#10;и отчёт об исполнении">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF28</bpmn:incoming>
+      <bpmn:outgoing>NF29</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="N_End" name="Заказ исполнен">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>NF29</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="NF01" sourceRef="N_Start" targetRef="N_Request" />
+    <bpmn:sequenceFlow id="NF02" sourceRef="N_Request" targetRef="N_Validate" />
+    <bpmn:sequenceFlow id="NF03" sourceRef="N_Validate" targetRef="N_Valid" />
+    <bpmn:sequenceFlow id="NF04" name="Нет" sourceRef="N_Valid" targetRef="N_Correct" />
+    <bpmn:sequenceFlow id="NF05" sourceRef="N_Correct" targetRef="N_Validate" />
+    <bpmn:sequenceFlow id="NF06" name="Да" sourceRef="N_Valid" targetRef="N_Decompose" />
+    <bpmn:sequenceFlow id="NF07" sourceRef="N_Decompose" targetRef="N_Rules" />
+    <bpmn:sequenceFlow id="NF08" sourceRef="N_Rules" targetRef="N_Plan" />
+    <bpmn:sequenceFlow id="NF09" sourceRef="N_Plan" targetRef="N_Approve" />
+    <bpmn:sequenceFlow id="NF10" sourceRef="N_Approve" targetRef="N_Approved" />
+    <bpmn:sequenceFlow id="NF11" name="Нет" sourceRef="N_Approved" targetRef="N_Cancel" />
+    <bpmn:sequenceFlow id="NF12" name="Да" sourceRef="N_Approved" targetRef="N_Register" />
+    <bpmn:sequenceFlow id="NF13" sourceRef="N_Register" targetRef="N_Split" />
+    <bpmn:sequenceFlow id="NF14" sourceRef="N_Split" targetRef="N_AcceptA" />
+    <bpmn:sequenceFlow id="NF15" sourceRef="N_AcceptA" targetRef="N_DoA" />
+    <bpmn:sequenceFlow id="NF16" sourceRef="N_DoA" targetRef="N_SendA" />
+    <bpmn:sequenceFlow id="NF17" sourceRef="N_SendA" targetRef="N_WaitA" />
+    <bpmn:sequenceFlow id="NF18" sourceRef="N_Split" targetRef="N_AcceptB" />
+    <bpmn:sequenceFlow id="NF19" sourceRef="N_AcceptB" targetRef="N_DoB" />
+    <bpmn:sequenceFlow id="NF20" sourceRef="N_DoB" targetRef="N_SendB" />
+    <bpmn:sequenceFlow id="NF21" sourceRef="N_SendB" targetRef="N_WaitB" />
+    <bpmn:sequenceFlow id="NF22" sourceRef="N_WaitA" targetRef="N_Join" />
+    <bpmn:sequenceFlow id="NF23" sourceRef="N_WaitB" targetRef="N_Join" />
+    <bpmn:sequenceFlow id="NF24" sourceRef="N_Join" targetRef="N_Check" />
+    <bpmn:sequenceFlow id="NF25" sourceRef="N_Check" targetRef="N_Count" />
+    <bpmn:sequenceFlow id="NF26" sourceRef="N_Count" targetRef="N_Aggregate" />
+    <bpmn:sequenceFlow id="NF27" sourceRef="N_Aggregate" targetRef="N_Notify" />
+    <bpmn:sequenceFlow id="NF28" sourceRef="N_Notify" targetRef="N_Receive" />
+    <bpmn:sequenceFlow id="NF29" sourceRef="N_Receive" targetRef="N_End" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Diagram_Normal">
+    <bpmndi:BPMNPlane id="Plane_Normal" bpmnElement="Process_Normal">
+      <bpmndi:BPMNShape id="Shape_Lane_Normal_supplier_b" bpmnElement="Lane_Normal_supplier_b" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="840" width="4620" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Normal_supplier_a" bpmnElement="Lane_Normal_supplier_a" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="590" width="4620" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Normal_system" bpmnElement="Lane_Normal_system" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="340" width="4620" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Normal_customer" bpmnElement="Lane_Normal_customer" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="90" width="4620" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Start" bpmnElement="N_Start">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="220" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="181" y="234" width="116" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Validate" bpmnElement="N_Validate">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="620" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Valid" bpmnElement="N_Valid" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="855" y="415" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="833" y="475" width="98" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Decompose" bpmnElement="N_Decompose">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1050" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Rules" bpmnElement="N_Rules">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1285" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Plan" bpmnElement="N_Plan">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1520" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Cancel" bpmnElement="N_Cancel">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1955" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1924" y="234" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Register" bpmnElement="N_Register">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1990" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Split" bpmnElement="N_Split" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2230" y="415" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2196" y="391" width="122" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_AcceptA" bpmnElement="N_AcceptA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2410" y="655" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_DoA" bpmnElement="N_DoA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2650" y="655" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_SendA" bpmnElement="N_SendA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2890" y="655" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_AcceptB" bpmnElement="N_AcceptB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2410" y="905" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_DoB" bpmnElement="N_DoB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2650" y="905" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_SendB" bpmnElement="N_SendB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2890" y="905" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Check" bpmnElement="N_Check">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3690" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Count" bpmnElement="N_Count">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3925" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Aggregate" bpmnElement="N_Aggregate">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4160" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Notify" bpmnElement="N_Notify">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4395" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Receive" bpmnElement="N_Receive">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4400" y="170" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_End" bpmnElement="N_End">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4655" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4634" y="234" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Request" bpmnElement="N_Request">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="351" y="171" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Correct" bpmnElement="N_Correct">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="793" y="171" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Approve" bpmnElement="N_Approve">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1525" y="171" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Approved" bpmnElement="N_Approved" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1765" y="182" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1739" y="158" width="106" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_WaitA" bpmnElement="N_WaitA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2958" y="422" width="42" height="42" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2840.5" y="436" width="107" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_WaitB" bpmnElement="N_WaitB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3173" y="422" width="42" height="42" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3140" y="398" width="107" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_N_Join" bpmnElement="N_Join" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3510" y="416" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3482" y="476" width="110" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_NF01" bpmnElement="NF01">
+        <di:waypoint x="258" y="209" />
+        <di:waypoint x="351" y="209" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF02" bpmnElement="NF02">
+        <di:waypoint x="529" y="209" />
+        <di:waypoint x="594" y="209" />
+        <di:waypoint x="594" y="443" />
+        <di:waypoint x="620" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF03" bpmnElement="NF03">
+        <di:waypoint x="808" y="443" />
+        <di:waypoint x="855" y="443" />
+        <di:waypoint x="855" y="442" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF04" bpmnElement="NF04">
+        <di:waypoint x="882" y="415" />
+        <di:waypoint x="882" y="247" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="890" y="393" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF05" bpmnElement="NF05">
+        <di:waypoint x="793" y="209" />
+        <di:waypoint x="714" y="209" />
+        <di:waypoint x="714" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF06" bpmnElement="NF06">
+        <di:waypoint x="909" y="442" />
+        <di:waypoint x="1050" y="442" />
+        <di:waypoint x="1050" y="443" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="923" y="443" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF07" bpmnElement="NF07">
+        <di:waypoint x="1238" y="443" />
+        <di:waypoint x="1285" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF08" bpmnElement="NF08">
+        <di:waypoint x="1473" y="443" />
+        <di:waypoint x="1520" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF09" bpmnElement="NF09">
+        <di:waypoint x="1614" y="405" />
+        <di:waypoint x="1614" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF10" bpmnElement="NF10">
+        <di:waypoint x="1703" y="209" />
+        <di:waypoint x="1765" y="209" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF11" bpmnElement="NF11">
+        <di:waypoint x="1819" y="209" />
+        <di:waypoint x="1955" y="209" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1830" y="193" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF12" bpmnElement="NF12">
+        <di:waypoint x="1792" y="236" />
+        <di:waypoint x="1792" y="443" />
+        <di:waypoint x="1990" y="443" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1803" y="234" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF13" bpmnElement="NF13">
+        <di:waypoint x="2178" y="443" />
+        <di:waypoint x="2230" y="443" />
+        <di:waypoint x="2230" y="442" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF14" bpmnElement="NF14">
+        <di:waypoint x="2284" y="442" />
+        <di:waypoint x="2499" y="442" />
+        <di:waypoint x="2499" y="655" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF15" bpmnElement="NF15">
+        <di:waypoint x="2588" y="693" />
+        <di:waypoint x="2650" y="693" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF16" bpmnElement="NF16">
+        <di:waypoint x="2828" y="693" />
+        <di:waypoint x="2890" y="693" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF17" bpmnElement="NF17">
+        <di:waypoint x="2979" y="655" />
+        <di:waypoint x="2979" y="464" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF18" bpmnElement="NF18">
+        <di:waypoint x="2257" y="469" />
+        <di:waypoint x="2257" y="943" />
+        <di:waypoint x="2410" y="943" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF19" bpmnElement="NF19">
+        <di:waypoint x="2588" y="943" />
+        <di:waypoint x="2650" y="943" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF20" bpmnElement="NF20">
+        <di:waypoint x="2828" y="943" />
+        <di:waypoint x="2890" y="943" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF21" bpmnElement="NF21">
+        <di:waypoint x="3068" y="943" />
+        <di:waypoint x="3194" y="943" />
+        <di:waypoint x="3194" y="464" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF22" bpmnElement="NF22">
+        <di:waypoint x="2979" y="422" />
+        <di:waypoint x="2979" y="360" />
+        <di:waypoint x="3537" y="360" />
+        <di:waypoint x="3537" y="416" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF23" bpmnElement="NF23">
+        <di:waypoint x="3215" y="443" />
+        <di:waypoint x="3510" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF24" bpmnElement="NF24">
+        <di:waypoint x="3564" y="443" />
+        <di:waypoint x="3690" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF25" bpmnElement="NF25">
+        <di:waypoint x="3878" y="443" />
+        <di:waypoint x="3925" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF26" bpmnElement="NF26">
+        <di:waypoint x="4113" y="443" />
+        <di:waypoint x="4160" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF27" bpmnElement="NF27">
+        <di:waypoint x="4348" y="443" />
+        <di:waypoint x="4395" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF28" bpmnElement="NF28">
+        <di:waypoint x="4489" y="405" />
+        <di:waypoint x="4489" y="325.5" />
+        <di:waypoint x="4489" y="325.5" />
+        <di:waypoint x="4489" y="246" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_NF29" bpmnElement="NF29">
+        <di:waypoint x="4578" y="208" />
+        <di:waypoint x="4655" y="208" />
+        <di:waypoint x="4655" y="209" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

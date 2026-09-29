@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_PartialFailure" targetNamespace="https://example.org/gias-rkd/order-orchestration" exporter="Camunda Modeler" exporterVersion="5.51.1">
+  <bpmn:process id="Process_PartialFailure" name="Частичный сбой одного из поставщиков" isExecutable="false">
+    <bpmn:documentation>Аналитическая модель макета по п. 3.2.2.3 ТЗ. Успешный результат поставщика A сохраняется. Показаны формализованные варианты коррекции: повтор, замена поставщика и принятие частичного результата. Внутренняя работа поставщиков не моделируется.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_PartialFailure">
+      <bpmn:lane id="Lane_PartialFailure_supplier_b" name="Поставщик B / замещающий поставщик">
+        <bpmn:flowNodeRef>F_DoReplacement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_SendReplacementResult</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_DoB</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PartialFailure_supplier_a" name="Поставщик A">
+        <bpmn:flowNodeRef>F_DoA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_SendA</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PartialFailure_system" name="Система-агрегатор">
+        <bpmn:flowNodeRef>F_Register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_CheckB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_RecordFail</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_SaveA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_CountFull</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_AggregateFull</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_SendReplacement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Retry</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Select</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Partial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Rules</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_ResultB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Split</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_TimeoutB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_ErrorB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_WaitB</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_MergeFail</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Full</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Action</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Changed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_CountRecovered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Recovered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_CheckReplacement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_CountPartial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_PackagePartial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_AggregateRecovered</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PartialFailure_customer" name="Пользователь">
+        <bpmn:flowNodeRef>F_DecidePartial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_UserFull</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Approve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_UserRecovered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_EndFull</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_EndFailed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_Agree</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_AcceptPartial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_EndRecovered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>F_EndPartial</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="F_Start" name="Заказ подтверждён">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:outgoing>FF01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="F_Register" name="Создать заказ, два подзаказа&#10;и плановые объёмы">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF01</bpmn:incoming>
+      <bpmn:outgoing>FF02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="F_Split" name="Запустить параллельно">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF02</bpmn:incoming>
+      <bpmn:outgoing>FF03</bpmn:outgoing>
+      <bpmn:outgoing>FF07</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="F_DoA" name="Исполнить подзаказ A">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>FF03</bpmn:incoming>
+      <bpmn:outgoing>FF04</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="F_SendA" name="Передать результат A&#10;и фактический объём">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>FF04</bpmn:incoming>
+      <bpmn:outgoing>FF05</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:serviceTask id="F_SaveA" name="Проверить и сохранить A;&#10;учесть принятый объём">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF05</bpmn:incoming>
+      <bpmn:outgoing>FF06</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:task id="F_DoB" name="Исполнять подзаказ B">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>FF07</bpmn:incoming>
+      <bpmn:incoming>FF27</bpmn:incoming>
+      <bpmn:outgoing>FF08</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:eventBasedGateway id="F_WaitB" name="Событие по B">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF08</bpmn:incoming>
+      <bpmn:outgoing>FF09</bpmn:outgoing>
+      <bpmn:outgoing>FF10</bpmn:outgoing>
+      <bpmn:outgoing>FF11</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="F_ResultB" name="Результат B получен">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF09</bpmn:incoming>
+      <bpmn:outgoing>FF12</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_F_ResultB" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="F_ErrorB" name="Сообщение об ошибке">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF10</bpmn:incoming>
+      <bpmn:outgoing>FF14</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_F_ErrorB" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="F_TimeoutB" name="Истёк срок ожидания">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF11</bpmn:incoming>
+      <bpmn:outgoing>FF15</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED_F_TimeoutB">
+        <bpmn:timeDuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">PT1H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="F_CheckB" name="Проверить результат B">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF12</bpmn:incoming>
+      <bpmn:outgoing>FF13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="F_MergeFail" name="Сбой подтверждён">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF14</bpmn:incoming>
+      <bpmn:incoming>FF15</bpmn:incoming>
+      <bpmn:outgoing>FF16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_RecordFail" name="Зафиксировать причину,&#10;неисполненный объём и SLA">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF16</bpmn:incoming>
+      <bpmn:outgoing>FF17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="F_Join" name="Завершить обе ветви">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF06</bpmn:incoming>
+      <bpmn:incoming>FF13</bpmn:incoming>
+      <bpmn:incoming>FF17</bpmn:incoming>
+      <bpmn:outgoing>FF18</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:exclusiveGateway id="F_Full" name="Все позиции исполнены?">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF18</bpmn:incoming>
+      <bpmn:outgoing>FF19</bpmn:outgoing>
+      <bpmn:outgoing>FF23</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_CountFull" name="Зафиксировать итоговые&#10;объёмы без двойного учёта">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF19</bpmn:incoming>
+      <bpmn:outgoing>FF20</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="F_AggregateFull" name="Агрегировать результаты&#10;и итоговый отчёт">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF20</bpmn:incoming>
+      <bpmn:outgoing>FF21</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="F_UserFull" name="Получить полный комплект">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF21</bpmn:incoming>
+      <bpmn:outgoing>FF22</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="F_EndFull" name="Заказ исполнен">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF22</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="F_Partial" name="Присвоить состояние&#10;«Частичный сбой»">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF23</bpmn:incoming>
+      <bpmn:outgoing>FF24</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="F_Rules" name="Применить правила коррекции,&#10;приоритетов и ограничений">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF24</bpmn:incoming>
+      <bpmn:outgoing>FF25</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="F_Action" name="Корректирующее действие">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF25</bpmn:incoming>
+      <bpmn:outgoing>FF26</bpmn:outgoing>
+      <bpmn:outgoing>FF28</bpmn:outgoing>
+      <bpmn:outgoing>FF29</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_Retry" name="Создать новую попытку B;&#10;сохранить связь и номер">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF26</bpmn:incoming>
+      <bpmn:outgoing>FF27</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="F_Select" name="Подобрать замещающего&#10;поставщика и предложение">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF28</bpmn:incoming>
+      <bpmn:outgoing>FF30</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="F_Changed" name="Изменились цена, срок&#10;или характеристики?">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF30</bpmn:incoming>
+      <bpmn:outgoing>FF31</bpmn:outgoing>
+      <bpmn:outgoing>FF35</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="F_Approve" name="Подтвердить изменённые&#10;условия замены">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF31</bpmn:incoming>
+      <bpmn:outgoing>FF32</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="F_Agree" name="Изменения приняты?">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF32</bpmn:incoming>
+      <bpmn:outgoing>FF33</bpmn:outgoing>
+      <bpmn:outgoing>FF34</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_SendReplacement" name="Направить подзаказ B2&#10;замещающему поставщику">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF33</bpmn:incoming>
+      <bpmn:incoming>FF35</bpmn:incoming>
+      <bpmn:outgoing>FF36</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:task id="F_DoReplacement" name="Исполнить замещающий&#10;подзаказ B2">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>FF36</bpmn:incoming>
+      <bpmn:outgoing>FF37</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="F_SendReplacementResult" name="Передать результат B2&#10;и фактический объём">
+      <bpmn:documentation>Внешнее действие поставщика без раскрытия его внутреннего процесса.</bpmn:documentation>
+      <bpmn:incoming>FF37</bpmn:incoming>
+      <bpmn:outgoing>FF38</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:serviceTask id="F_CheckReplacement" name="Проверить B2 и закрыть&#10;неисполненный объём B">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF38</bpmn:incoming>
+      <bpmn:outgoing>FF39</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="F_Recovered" name="Полнота восстановлена?">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF39</bpmn:incoming>
+      <bpmn:outgoing>FF40</bpmn:outgoing>
+      <bpmn:outgoing>FF44</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_CountRecovered" name="Пересчитать итог: A + B2;&#10;исключить двойной учёт">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF40</bpmn:incoming>
+      <bpmn:outgoing>FF41</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="F_AggregateRecovered" name="Агрегировать сохранённый A,&#10;B2, метаданные и отчёт">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF41</bpmn:incoming>
+      <bpmn:outgoing>FF42</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="F_UserRecovered" name="Получить комплект&#10;после замены">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF42</bpmn:incoming>
+      <bpmn:outgoing>FF43</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="F_EndRecovered" name="Исполнен после коррекции">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF43</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="F_DecidePartial" name="Решить: принять доступный&#10;результат A или отказаться">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF29</bpmn:incoming>
+      <bpmn:incoming>FF34</bpmn:incoming>
+      <bpmn:incoming>FF44</bpmn:incoming>
+      <bpmn:outgoing>FF45</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="F_AcceptPartial" name="Принять частичный&#10;результат?">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF45</bpmn:incoming>
+      <bpmn:outgoing>FF46</bpmn:outgoing>
+      <bpmn:outgoing>FF49</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="F_CountPartial" name="Учесть исполненный A и&#10;неисполненный остаток B">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF46</bpmn:incoming>
+      <bpmn:outgoing>FF47</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="F_PackagePartial" name="Сформировать доступный&#10;комплект и отчёт о сбое">
+      <bpmn:documentation>Функция проектируемой системы-агрегатора.</bpmn:documentation>
+      <bpmn:incoming>FF47</bpmn:incoming>
+      <bpmn:outgoing>FF48</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="F_EndPartial" name="Частично исполнен">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF48</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="F_EndFailed" name="Не исполнен">
+      <bpmn:documentation>Пользовательское действие.</bpmn:documentation>
+      <bpmn:incoming>FF49</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="FF01" sourceRef="F_Start" targetRef="F_Register" />
+    <bpmn:sequenceFlow id="FF02" sourceRef="F_Register" targetRef="F_Split" />
+    <bpmn:sequenceFlow id="FF03" sourceRef="F_Split" targetRef="F_DoA" />
+    <bpmn:sequenceFlow id="FF04" sourceRef="F_DoA" targetRef="F_SendA" />
+    <bpmn:sequenceFlow id="FF05" sourceRef="F_SendA" targetRef="F_SaveA" />
+    <bpmn:sequenceFlow id="FF06" sourceRef="F_SaveA" targetRef="F_Join" />
+    <bpmn:sequenceFlow id="FF07" sourceRef="F_Split" targetRef="F_DoB" />
+    <bpmn:sequenceFlow id="FF08" sourceRef="F_DoB" targetRef="F_WaitB" />
+    <bpmn:sequenceFlow id="FF09" name="Результат" sourceRef="F_WaitB" targetRef="F_ResultB" />
+    <bpmn:sequenceFlow id="FF10" name="Ошибка" sourceRef="F_WaitB" targetRef="F_ErrorB" />
+    <bpmn:sequenceFlow id="FF11" name="Тайм-аут" sourceRef="F_WaitB" targetRef="F_TimeoutB" />
+    <bpmn:sequenceFlow id="FF12" sourceRef="F_ResultB" targetRef="F_CheckB" />
+    <bpmn:sequenceFlow id="FF13" sourceRef="F_CheckB" targetRef="F_Join" />
+    <bpmn:sequenceFlow id="FF14" sourceRef="F_ErrorB" targetRef="F_MergeFail" />
+    <bpmn:sequenceFlow id="FF15" sourceRef="F_TimeoutB" targetRef="F_MergeFail" />
+    <bpmn:sequenceFlow id="FF16" sourceRef="F_MergeFail" targetRef="F_RecordFail" />
+    <bpmn:sequenceFlow id="FF17" sourceRef="F_RecordFail" targetRef="F_Join" />
+    <bpmn:sequenceFlow id="FF18" sourceRef="F_Join" targetRef="F_Full" />
+    <bpmn:sequenceFlow id="FF19" name="Да" sourceRef="F_Full" targetRef="F_CountFull" />
+    <bpmn:sequenceFlow id="FF20" sourceRef="F_CountFull" targetRef="F_AggregateFull" />
+    <bpmn:sequenceFlow id="FF21" sourceRef="F_AggregateFull" targetRef="F_UserFull" />
+    <bpmn:sequenceFlow id="FF22" sourceRef="F_UserFull" targetRef="F_EndFull" />
+    <bpmn:sequenceFlow id="FF23" name="Нет" sourceRef="F_Full" targetRef="F_Partial" />
+    <bpmn:sequenceFlow id="FF24" sourceRef="F_Partial" targetRef="F_Rules" />
+    <bpmn:sequenceFlow id="FF25" sourceRef="F_Rules" targetRef="F_Action" />
+    <bpmn:sequenceFlow id="FF26" name="Повтор" sourceRef="F_Action" targetRef="F_Retry" />
+    <bpmn:sequenceFlow id="FF27" sourceRef="F_Retry" targetRef="F_DoB" />
+    <bpmn:sequenceFlow id="FF28" name="Замена" sourceRef="F_Action" targetRef="F_Select" />
+    <bpmn:sequenceFlow id="FF29" name="Восстановление невозможно" sourceRef="F_Action" targetRef="F_DecidePartial" />
+    <bpmn:sequenceFlow id="FF30" sourceRef="F_Select" targetRef="F_Changed" />
+    <bpmn:sequenceFlow id="FF31" name="Да" sourceRef="F_Changed" targetRef="F_Approve" />
+    <bpmn:sequenceFlow id="FF32" sourceRef="F_Approve" targetRef="F_Agree" />
+    <bpmn:sequenceFlow id="FF33" name="Да" sourceRef="F_Agree" targetRef="F_SendReplacement" />
+    <bpmn:sequenceFlow id="FF34" name="Нет" sourceRef="F_Agree" targetRef="F_DecidePartial" />
+    <bpmn:sequenceFlow id="FF35" name="Нет" sourceRef="F_Changed" targetRef="F_SendReplacement" />
+    <bpmn:sequenceFlow id="FF36" sourceRef="F_SendReplacement" targetRef="F_DoReplacement" />
+    <bpmn:sequenceFlow id="FF37" sourceRef="F_DoReplacement" targetRef="F_SendReplacementResult" />
+    <bpmn:sequenceFlow id="FF38" sourceRef="F_SendReplacementResult" targetRef="F_CheckReplacement" />
+    <bpmn:sequenceFlow id="FF39" sourceRef="F_CheckReplacement" targetRef="F_Recovered" />
+    <bpmn:sequenceFlow id="FF40" name="Да" sourceRef="F_Recovered" targetRef="F_CountRecovered" />
+    <bpmn:sequenceFlow id="FF41" sourceRef="F_CountRecovered" targetRef="F_AggregateRecovered" />
+    <bpmn:sequenceFlow id="FF42" sourceRef="F_AggregateRecovered" targetRef="F_UserRecovered" />
+    <bpmn:sequenceFlow id="FF43" sourceRef="F_UserRecovered" targetRef="F_EndRecovered" />
+    <bpmn:sequenceFlow id="FF44" name="Нет" sourceRef="F_Recovered" targetRef="F_DecidePartial" />
+    <bpmn:sequenceFlow id="FF45" sourceRef="F_DecidePartial" targetRef="F_AcceptPartial" />
+    <bpmn:sequenceFlow id="FF46" name="Да" sourceRef="F_AcceptPartial" targetRef="F_CountPartial" />
+    <bpmn:sequenceFlow id="FF47" sourceRef="F_CountPartial" targetRef="F_PackagePartial" />
+    <bpmn:sequenceFlow id="FF48" sourceRef="F_PackagePartial" targetRef="F_EndPartial" />
+    <bpmn:sequenceFlow id="FF49" name="Нет" sourceRef="F_AcceptPartial" targetRef="F_EndFailed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Diagram_PartialFailure">
+    <bpmndi:BPMNPlane id="Plane_PartialFailure" bpmnElement="Process_PartialFailure">
+      <bpmndi:BPMNShape id="Shape_Lane_PartialFailure_supplier_b" bpmnElement="Lane_PartialFailure_supplier_b" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="840" width="5140" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_PartialFailure_supplier_a" bpmnElement="Lane_PartialFailure_supplier_a" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="590" width="5140" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_PartialFailure_system" bpmnElement="Lane_PartialFailure_system" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="340" width="5140" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_PartialFailure_customer" bpmnElement="Lane_PartialFailure_customer" isHorizontal="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="160" y="90" width="5140" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Start" bpmnElement="F_Start">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="220" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="189" y="234" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Register" bpmnElement="F_Register">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="380" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Split" bpmnElement="F_Split" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="620" y="415" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="586" y="391" width="122" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_DoA" bpmnElement="F_DoA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="800" y="655" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_SendA" bpmnElement="F_SendA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1020" y="655" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_ResultB" bpmnElement="F_ResultB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1230" y="350" width="42" height="42" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1198" y="398" width="106" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_EndFull" bpmnElement="F_EndFull">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2780" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2759" y="234" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_DoReplacement" bpmnElement="F_DoReplacement">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3750" y="905" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_SendReplacementResult" bpmnElement="F_SendReplacementResult">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3990" y="905" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_DecidePartial" bpmnElement="F_DecidePartial">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3760" y="170" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_AcceptPartial" bpmnElement="F_AcceptPartial" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4020" y="180" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3996" y="142.5" width="101" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_EndFailed" bpmnElement="F_EndFailed">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4280" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4266" y="234" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_DoB" bpmnElement="F_DoB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="558" y="902" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_CheckB" bpmnElement="F_CheckB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1373" y="352" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_RecordFail" bpmnElement="F_RecordFail">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1606" y="405" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_MergeFail" bpmnElement="F_MergeFail" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1440" y="443" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1341" y="451" width="97" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_TimeoutB" bpmnElement="F_TimeoutB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1149" y="499" width="42" height="42" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1116" y="547" width="109" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_ErrorB" bpmnElement="F_ErrorB">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1230" y="422" width="42" height="42" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1193" y="470" width="117" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_WaitB" bpmnElement="F_WaitB" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1013" y="416" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="944" y="421" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_SaveA" bpmnElement="F_SaveA">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1596" y="502" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_UserFull" bpmnElement="F_UserFull">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2535" y="171" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_CountFull" bpmnElement="F_CountFull">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2300" y="352" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_AggregateFull" bpmnElement="F_AggregateFull">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2530" y="352" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_SendReplacement" bpmnElement="F_SendReplacement">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3536" y="492" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Approve" bpmnElement="F_Approve">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3153" y="102" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Agree" bpmnElement="F_Agree" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3413" y="253" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3293" y="273" width="110" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_UserRecovered" bpmnElement="F_UserRecovered">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4861" y="171" width="178" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_EndRecovered" bpmnElement="F_EndRecovered">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="5101" y="190" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="5051" y="234" width="139" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_EndPartial" bpmnElement="F_EndPartial">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="5191" y="281" width="38" height="38" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="5160" y="257" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Join" bpmnElement="F_Join" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1923" y="416" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1815" y="451" width="110" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Action" bpmnElement="F_Action" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2763" y="476" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2630" y="470" width="139" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Retry" bpmnElement="F_Retry">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3056" y="372" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Select" bpmnElement="F_Select">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3056" y="502" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Full" bpmnElement="F_Full" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2023" y="416" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1986" y="476" width="129" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Partial" bpmnElement="F_Partial">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2156" y="465" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Rules" bpmnElement="F_Rules">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2376" y="465" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Changed" bpmnElement="F_Changed" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3313" y="433" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3281" y="493" width="119" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_CountRecovered" bpmnElement="F_CountRecovered">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4616" y="382" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_Recovered" bpmnElement="F_Recovered" isMarkerVisible="true">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4460" y="393" width="54" height="54" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4422.5" y="457" width="129" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_CheckReplacement" bpmnElement="F_CheckReplacement">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4205" y="382" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_CountPartial" bpmnElement="F_CountPartial">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4426" y="502" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_PackagePartial" bpmnElement="F_PackagePartial">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4776" y="502" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_F_AggregateRecovered" bpmnElement="F_AggregateRecovered">
+        <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4856" y="382" width="188" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_FF01" bpmnElement="FF01">
+        <di:waypoint x="258" y="209" />
+        <di:waypoint x="319" y="209" />
+        <di:waypoint x="319" y="443" />
+        <di:waypoint x="380" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF02" bpmnElement="FF02">
+        <di:waypoint x="568" y="443" />
+        <di:waypoint x="620" y="443" />
+        <di:waypoint x="620" y="442" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF03" bpmnElement="FF03">
+        <di:waypoint x="674" y="442" />
+        <di:waypoint x="710" y="442" />
+        <di:waypoint x="710" y="693" />
+        <di:waypoint x="800" y="693" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF07" bpmnElement="FF07">
+        <di:waypoint x="647" y="469" />
+        <di:waypoint x="647" y="902" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF04" bpmnElement="FF04">
+        <di:waypoint x="978" y="693" />
+        <di:waypoint x="1020" y="693" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF05" bpmnElement="FF05">
+        <di:waypoint x="1198" y="693" />
+        <di:waypoint x="1530" y="693" />
+        <di:waypoint x="1530" y="540" />
+        <di:waypoint x="1596" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF09" bpmnElement="FF09">
+        <di:waypoint x="1040" y="416" />
+        <di:waypoint x="1040" y="371" />
+        <di:waypoint x="1230" y="371" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1056" y="353" width="51" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF12" bpmnElement="FF12">
+        <di:waypoint x="1272" y="371" />
+        <di:waypoint x="1323" y="371" />
+        <di:waypoint x="1323" y="390" />
+        <di:waypoint x="1373" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF22" bpmnElement="FF22">
+        <di:waypoint x="2713" y="209" />
+        <di:waypoint x="2780" y="209" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF36" bpmnElement="FF36">
+        <di:waypoint x="3630" y="568" />
+        <di:waypoint x="3630" y="943" />
+        <di:waypoint x="3750" y="943" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF37" bpmnElement="FF37">
+        <di:waypoint x="3928" y="943" />
+        <di:waypoint x="3990" y="943" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF38" bpmnElement="FF38">
+        <di:waypoint x="4168" y="943" />
+        <di:waypoint x="4299" y="943" />
+        <di:waypoint x="4299" y="458" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF39" bpmnElement="FF39">
+        <di:waypoint x="4393" y="420" />
+        <di:waypoint x="4460" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF29" bpmnElement="FF29">
+        <di:waypoint x="2817" y="503" />
+        <di:waypoint x="2990" y="503" />
+        <di:waypoint x="2990" y="208" />
+        <di:waypoint x="3760" y="208" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2815" y="476" width="150" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF34" bpmnElement="FF34">
+        <di:waypoint x="3467" y="280" />
+        <di:waypoint x="3849" y="280" />
+        <di:waypoint x="3849" y="246" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3470" y="251" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF44" bpmnElement="FF44">
+        <di:waypoint x="4487" y="393" />
+        <di:waypoint x="4487" y="120" />
+        <di:waypoint x="3849" y="120" />
+        <di:waypoint x="3849" y="170" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4460" y="374" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF45" bpmnElement="FF45">
+        <di:waypoint x="3938" y="208" />
+        <di:waypoint x="4020" y="208" />
+        <di:waypoint x="4020" y="207" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF46" bpmnElement="FF46">
+        <di:waypoint x="4047" y="234" />
+        <di:waypoint x="4047" y="540" />
+        <di:waypoint x="4426" y="540" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4063" y="239" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF49" bpmnElement="FF49">
+        <di:waypoint x="4074" y="207" />
+        <di:waypoint x="4280" y="207" />
+        <di:waypoint x="4280" y="209" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4090" y="183" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF27" bpmnElement="FF27">
+        <di:waypoint x="3056" y="410" />
+        <di:waypoint x="3020" y="410" />
+        <di:waypoint x="3020" y="1025" />
+        <di:waypoint x="647" y="1025" />
+        <di:waypoint x="647" y="978" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF08" bpmnElement="FF08">
+        <di:waypoint x="736" y="940" />
+        <di:waypoint x="760" y="940" />
+        <di:waypoint x="760" y="443" />
+        <di:waypoint x="1013" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF13" bpmnElement="FF13">
+        <di:waypoint x="1561" y="390" />
+        <di:waypoint x="1950" y="390" />
+        <di:waypoint x="1950" y="416" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF16" bpmnElement="FF16">
+        <di:waypoint x="1494" y="470" />
+        <di:waypoint x="1515" y="470" />
+        <di:waypoint x="1515" y="443" />
+        <di:waypoint x="1606" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF17" bpmnElement="FF17">
+        <di:waypoint x="1794" y="443" />
+        <di:waypoint x="1923" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF14" bpmnElement="FF14">
+        <di:waypoint x="1272" y="443" />
+        <di:waypoint x="1320" y="443" />
+        <di:waypoint x="1320" y="470" />
+        <di:waypoint x="1440" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF15" bpmnElement="FF15">
+        <di:waypoint x="1191" y="520" />
+        <di:waypoint x="1467" y="520" />
+        <di:waypoint x="1467" y="497" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF11" bpmnElement="FF11">
+        <di:waypoint x="1040" y="470" />
+        <di:waypoint x="1040" y="520" />
+        <di:waypoint x="1149" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1046" y="496" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF10" bpmnElement="FF10">
+        <di:waypoint x="1067" y="443" />
+        <di:waypoint x="1230" y="443" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="1088" y="421" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF06" bpmnElement="FF06">
+        <di:waypoint x="1784" y="540" />
+        <di:waypoint x="1950" y="540" />
+        <di:waypoint x="1950" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF21" bpmnElement="FF21">
+        <di:waypoint x="2624" y="352" />
+        <di:waypoint x="2624" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF19" bpmnElement="FF19">
+        <di:waypoint x="2050" y="416" />
+        <di:waypoint x="2050" y="390" />
+        <di:waypoint x="2300" y="390" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2170" y="361" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF20" bpmnElement="FF20">
+        <di:waypoint x="2488" y="390" />
+        <di:waypoint x="2530" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF33" bpmnElement="FF33">
+        <di:waypoint x="3440" y="307" />
+        <di:waypoint x="3440" y="330" />
+        <di:waypoint x="3630" y="330" />
+        <di:waypoint x="3630" y="492" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3453" y="304" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF35" bpmnElement="FF35">
+        <di:waypoint x="3367" y="460" />
+        <di:waypoint x="3403" y="460" />
+        <di:waypoint x="3403" y="530" />
+        <di:waypoint x="3536" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="3387" y="444" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF31" bpmnElement="FF31">
+        <di:waypoint x="3340" y="433" />
+        <di:waypoint x="3340" y="311" />
+        <di:waypoint x="3242" y="311" />
+        <di:waypoint x="3242" y="178" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3347" y="403" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF32" bpmnElement="FF32">
+        <di:waypoint x="3331" y="140" />
+        <di:waypoint x="3440" y="140" />
+        <di:waypoint x="3440" y="253" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF47" bpmnElement="FF47">
+        <di:waypoint x="4614" y="540" />
+        <di:waypoint x="4776" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF48" bpmnElement="FF48">
+        <di:waypoint x="4964" y="540" />
+        <di:waypoint x="5210" y="540" />
+        <di:waypoint x="5210" y="319" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF40" bpmnElement="FF40">
+        <di:waypoint x="4514" y="420" />
+        <di:waypoint x="4616" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="4513" y="403" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF41" bpmnElement="FF41">
+        <di:waypoint x="4804" y="420" />
+        <di:waypoint x="4856" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF42" bpmnElement="FF42">
+        <di:waypoint x="4950" y="382" />
+        <di:waypoint x="4950" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF43" bpmnElement="FF43">
+        <di:waypoint x="5039" y="209" />
+        <di:waypoint x="5101" y="209" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF18" bpmnElement="FF18">
+        <di:waypoint x="1977" y="443" />
+        <di:waypoint x="2023" y="443" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF25" bpmnElement="FF25">
+        <di:waypoint x="2564" y="503" />
+        <di:waypoint x="2763" y="503" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF26" bpmnElement="FF26">
+        <di:waypoint x="2790" y="476" />
+        <di:waypoint x="2790" y="350" />
+        <di:waypoint x="3150" y="350" />
+        <di:waypoint x="3150" y="372" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2749" y="435" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF28" bpmnElement="FF28">
+        <di:waypoint x="2790" y="530" />
+        <di:waypoint x="2790" y="540" />
+        <di:waypoint x="3056" y="540" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2806" y="524" width="39" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF30" bpmnElement="FF30">
+        <di:waypoint x="3150" y="502" />
+        <di:waypoint x="3150" y="460" />
+        <di:waypoint x="3313" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF23" bpmnElement="FF23">
+        <di:waypoint x="2077" y="443" />
+        <di:waypoint x="2130" y="443" />
+        <di:waypoint x="2130" y="503" />
+        <di:waypoint x="2156" y="503" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" x="2094" y="414" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_FF24" bpmnElement="FF24">
+        <di:waypoint x="2344" y="503" />
+        <di:waypoint x="2376" y="503" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

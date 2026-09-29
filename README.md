@@ -1,65 +1,188 @@
+# Анализ сервисов ДЗЗ и оркестрация консолидированного заказа
+
+## Что подготовлено
+
+- сравнительный анализ четырёх сервисов;
+- 24 BPMN-схемы пользовательских процессов: по шесть для каждой платформы;
+- две BPMN-схемы консолидированного заказа: штатное исполнение и частичный сбой поставщика;
+- диаграмма состояний заказа в форматах draw.io, PNG и SVG;
+- 41 функциональное требование `ORC-001–ORC-041`;
+- 47 нефункциональных требований `NFR-001–NFR-047`;
+- описание процесса со стороны пользователя, системы и поставщиков;
+- сравнительная таблица, презентация и PDF-версия материалов.
+
+## Исследованные сервисы
+
+| Сервис | Роль в исследовании | Основной акцент |
+|---|---|---|
+| **ArcGIS** | ГИС-платформа для работы с растровыми и пространственными данными | Публикация, анализ, управление слоями и предоставление доступа |
+| **SkyFi** | Пользовательский сервис заказа спутниковых данных | Простой путь от выбора территории до покупки или новой съёмки |
+| **SkyWatch EarthCache** | API-платформа поиска, заказа и доставки данных | Автоматизация, проекты, роли и интеграция через API |
+| **UP42** | Платформа работы с геопространственными данными | Каталог, tasking, processing, хранение и получение результатов |
+
+ArcGIS рассматривается отдельно от классических маркетплейсов спутниковых снимков. Его основная роль — работа с уже доступными данными и сервисами. SkyFi, SkyWatch и UP42 ближе к платформам поиска и заказа данных ДЗЗ.
+
+## Структура репозитория
+
 ```text
 marketplace/
-├── arcgis/                  # 6 процессов ArcGIS: BPMN + PNG
-├── skyfi/                   # 6 процессов SkyFi: BPMN + PNG
-├── skywatch/                # 6 процессов SkyWatch: BPMN + PNG
-├── up42/                    # 6 процессов UP42: BPMN + PNG, отдельный анализ
-├── bpmn.pptx                # презентация со схемами процессов
-├── comparison_table.xlsx    # сравнительная таблица сервисов
-├── service.txt              # краткие описания сервисов и процессов
-└── idea.txt                 # идея интеллектуального поиска снимков
+├── arcgis/                         # 6 процессов ArcGIS: BPMN + PNG
+├── skyfi/                          # 6 процессов SkyFi: BPMN + PNG
+├── skywatch/                       # 6 процессов SkyWatch: BPMN + PNG
+├── up42/                           # 6 процессов UP42: BPMN + PNG + анализ DOCX
+├── order-orchestration/            # требования и модели консолидированного заказа
+├── bpmn.pptx                       # презентация
+├── bpmn.pdf                        # версия презентации для просмотра
+├── comparison_table.xlsx           # сравнительная таблица сервисов
+├── service.txt                     # краткие описания сервисов
+├── idea.txt                        # идея интеллектуального подбора данных
+└── README.md
 ```
+
+## Материалы по сервисам
 
 ### ArcGIS
 
 | № | Процесс | BPMN | Превью |
 |---:|---|---|---|
-| 1 | Поиск и подключение снимков | [01_discover_imagery.bpmn](arcgis/01_discover_imagery.bpmn) | [PNG](arcgis/01_discover_imagery.png) |
-| 2 | Публикация растровых данных | [02_publish_imagery.bpmn](arcgis/02_publish_imagery.bpmn) | [PNG](arcgis/02_publish_imagery.png) |
-| 3 | Растровый анализ | [03_raster_analysis.bpmn](arcgis/03_raster_analysis.bpmn) | [PNG](arcgis/03_raster_analysis.png) |
-| 4 | Управление опубликованными изображениями | [04_manage_imagery.bpmn](arcgis/04_manage_imagery.bpmn) | [PNG](arcgis/04_manage_imagery.png) |
-| 5 | Настройка общего доступа | [05_share_access.bpmn](arcgis/05_share_access.bpmn) | [PNG](arcgis/05_share_access.png) |
-| 6 | Скачивание растров | [06_download_rasters.bpmn](arcgis/06_download_rasters.bpmn) | [PNG](arcgis/06_download_rasters.png) |
+| 1 | Поиск и подключение снимков | [BPMN](arcgis/01_discover_imagery.bpmn) | [PNG](arcgis/01_discover_imagery.png) |
+| 2 | Публикация растровых данных | [BPMN](arcgis/02_publish_imagery.bpmn) | [PNG](arcgis/02_publish_imagery.png) |
+| 3 | Растровый анализ | [BPMN](arcgis/03_raster_analysis.bpmn) | [PNG](arcgis/03_raster_analysis.png) |
+| 4 | Управление опубликованными изображениями | [BPMN](arcgis/04_manage_imagery.bpmn) | [PNG](arcgis/04_manage_imagery.png) |
+| 5 | Настройка общего доступа | [BPMN](arcgis/05_share_access.bpmn) | [PNG](arcgis/05_share_access.png) |
+| 6 | Скачивание растров | [BPMN](arcgis/06_download_rasters.bpmn) | [PNG](arcgis/06_download_rasters.png) |
 
 ### SkyFi
 
 | № | Процесс | BPMN | Превью |
 |---:|---|---|---|
-| 1 | Покупка архивного снимка | [01_archive_purchase.bpmn](skyfi/01_archive_purchase.bpmn) | [PNG](skyfi/01_archive_purchase.png) |
-| 2 | Заказ новой съёмки | [02_new_tasking.bpmn](skyfi/02_new_tasking.bpmn) | [PNG](skyfi/02_new_tasking.png) |
-| 3 | Заказ аналитического продукта | [03_analytics.bpmn](skyfi/03_analytics.bpmn) | [PNG](skyfi/03_analytics.png) |
-| 4 | Отслеживание заказа и получение результата | [04_order_delivery.bpmn](skyfi/04_order_delivery.bpmn) | [PNG](skyfi/04_order_delivery.png) |
-| 5 | Подключение STAC-каталога к ArcGIS | [05_arcgis_stac.bpmn](skyfi/05_arcgis_stac.bpmn) | [PNG](skyfi/05_arcgis_stac.png) |
-| 6 | Просмотр данных через WMTS | [06_wmts_streaming.bpmn](skyfi/06_wmts_streaming.bpmn) | [PNG](skyfi/06_wmts_streaming.png) |
+| 1 | Покупка архивного снимка | [BPMN](skyfi/01_archive_purchase.bpmn) | [PNG](skyfi/01_archive_purchase.png) |
+| 2 | Заказ новой съёмки | [BPMN](skyfi/02_new_tasking.bpmn) | [PNG](skyfi/02_new_tasking.png) |
+| 3 | Заказ аналитического продукта | [BPMN](skyfi/03_analytics.bpmn) | [PNG](skyfi/03_analytics.png) |
+| 4 | Отслеживание заказа и получение результата | [BPMN](skyfi/04_order_delivery.bpmn) | [PNG](skyfi/04_order_delivery.png) |
+| 5 | Подключение STAC-каталога к ArcGIS | [BPMN](skyfi/05_arcgis_stac.bpmn) | [PNG](skyfi/05_arcgis_stac.png) |
+| 6 | Просмотр данных через WMTS | [BPMN](skyfi/06_wmts_streaming.bpmn) | [PNG](skyfi/06_wmts_streaming.png) |
 
 ### SkyWatch EarthCache
 
 | № | Процесс | BPMN | Превью |
 |---:|---|---|---|
-| 1 | Заказ архивных данных | [01_archive_order.bpmn](skywatch/01_archive_order.bpmn) | [PNG](skywatch/01_archive_order.png) |
-| 2 | Заказ новой съёмки | [02_tasking.bpmn](skywatch/02_tasking.bpmn) | [PNG](skywatch/02_tasking.png) |
-| 3 | Управление заказами и результатами | [03_orders_results.bpmn](skywatch/03_orders_results.bpmn) | [PNG](skywatch/03_orders_results.png) |
-| 4 | Просмотр через DirectView и WMTS | [04_directview_wmts.bpmn](skywatch/04_directview_wmts.bpmn) | [PNG](skywatch/04_directview_wmts.png) |
-| 5 | Проекты и оплата | [05_projects_billing.bpmn](skywatch/05_projects_billing.bpmn) | [PNG](skywatch/05_projects_billing.png) |
-| 6 | Роли и права доступа | [06_roles_access.bpmn](skywatch/06_roles_access.bpmn) | [PNG](skywatch/06_roles_access.png) |
+| 1 | Заказ архивных данных | [BPMN](skywatch/01_archive_order.bpmn) | [PNG](skywatch/01_archive_order.png) |
+| 2 | Заказ новой съёмки | [BPMN](skywatch/02_tasking.bpmn) | [PNG](skywatch/02_tasking.png) |
+| 3 | Управление заказами и результатами | [BPMN](skywatch/03_orders_results.bpmn) | [PNG](skywatch/03_orders_results.png) |
+| 4 | Просмотр через DirectView и WMTS | [BPMN](skywatch/04_directview_wmts.bpmn) | [PNG](skywatch/04_directview_wmts.png) |
+| 5 | Проекты и оплата | [BPMN](skywatch/05_projects_billing.bpmn) | [PNG](skywatch/05_projects_billing.png) |
+| 6 | Роли и права доступа | [BPMN](skywatch/06_roles_access.bpmn) | [PNG](skywatch/06_roles_access.png) |
 
 ### UP42
 
 | № | Процесс | BPMN | Превью |
 |---:|---|---|---|
-| 1 | Заказ новой съёмки | [01_tasking.bpmn](up42/01_tasking.bpmn) | [PNG](up42/01_tasking.png) |
-| 2 | Обработка данных | [02_processing.bpmn](up42/02_processing.bpmn) | [PNG](up42/02_processing.png) |
-| 3 | Управление данными | [03_data_management.bpmn](up42/03_data_management.bpmn) | [PNG](up42/03_data_management.png) |
-| 4 | Поиск данных в каталоге | [04_catalog_search.bpmn](up42/04_catalog_search.bpmn) | [PNG](up42/04_catalog_search.png) |
-| 5 | Управление заказом и получение результатов | [05_order_results.bpmn](up42/05_order_results.bpmn) | [PNG](up42/05_order_results.png) |
-| 6 | Доступ к коллекциям и принятие EULA | [06_access_eula.bpmn](up42/06_access_eula.bpmn) | [PNG](up42/06_access_eula.png) |
+| 1 | Заказ новой спутниковой съёмки | [BPMN](up42/01_tasking.bpmn) | [PNG](up42/01_tasking.png) |
+| 2 | Обработка данных | [BPMN](up42/02_processing.bpmn) | [PNG](up42/02_processing.png) |
+| 3 | Управление данными | [BPMN](up42/03_data_management.bpmn) | [PNG](up42/03_data_management.png) |
+| 4 | Поиск данных в каталоге | [BPMN](up42/04_catalog_search.bpmn) | [PNG](up42/04_catalog_search.png) |
+| 5 | Управление заказом и получение результатов | [BPMN](up42/05_order_results.bpmn) | [PNG](up42/05_order_results.png) |
+| 6 | Доступ к коллекциям и принятие EULA | [BPMN](up42/06_access_eula.bpmn) | [PNG](up42/06_access_eula.png) |
 
-Подробный текстовый разбор UP42 находится в файле [UP42_process_analysis.docx](up42/UP42_process_analysis.docx).
+### Документы и диаграммы
+
+| Материал | Назначение |
+|---|---|
+| [Описание процесса](order-orchestration/01_process_description.md) | Действия пользователя, системы и поставщиков на каждом этапе |
+| [Функциональные области](order-orchestration/02_functional_areas.md) | Декомпозиция, асинхронность, координация, исключения, правила и агрегация |
+| [Функциональные требования](order-orchestration/03_functional_requirements.md) | Требования `ORC-001–ORC-041` |
+| [Нефункциональные требования](order-orchestration/04_non_functional_requirements.md) | Требования `NFR-001–NFR-047` |
+| [Диаграмма состояний draw.io](order-orchestration/05_order_state_diagram.drawio) | Редактируемая модель жизненного цикла заказа |
+| [Диаграмма состояний PNG](order-orchestration/05_order_state_diagram.png) | Быстрый просмотр на GitHub |
+| [Диаграмма состояний SVG](order-orchestration/05_order_state_diagram.svg) | Векторная версия для документов и презентаций |
+| [Штатное исполнение BPMN](order-orchestration/06_normal_execution.bpmn) | Параллельное исполнение подзаказов двумя поставщиками |
+| [Штатное исполнение PNG](order-orchestration/06_normal_execution.png) | Превью штатного сценария |
+| [Частичный сбой BPMN](order-orchestration/07_partial_supplier_failure.bpmn) | Ошибка или тайм-аут, повтор, замена и частичный результат |
+| [Частичный сбой PNG](order-orchestration/07_partial_supplier_failure.png) | Превью сценария частичного сбоя |
+
+### Штатный сценарий
+
+1. Пользователь формирует и подтверждает единый запрос.
+2. Система проверяет параметры и декомпозирует заказ.
+3. Создаются минимум два подзаказа разным поставщикам.
+4. Подзаказы исполняются параллельно.
+5. Система асинхронно получает и проверяет результаты.
+6. Принятые объёмы фиксируются без двойного учёта.
+7. Результаты и метаданные объединяются в единый комплект.
+
+### Частичный сбой
+
+Если поставщик A успешно передал результат, а поставщик B сообщил об ошибке или не ответил в установленный срок, система сохраняет результат A и переводит заказ в состояние **«Частичный сбой»**. Затем по формализованным правилам выбирается повторная попытка, замена поставщика или передача решения пользователю.
+
+Итоговые состояния:
+
+- **Исполнен** — получены и приняты все обязательные результаты или их допустимые замены;
+- **Частично исполнен** — пользователь или согласованное правило разрешили принять неполный комплект;
+- **Не исполнен** — обязательный результат получить не удалось;
+- **Отменён** — заказ остановлен до необратимого размещения подзаказов.
+
+Состояние **«Частичный сбой»** является промежуточным и не считается итогом исполнения.
+
+![Диаграмма состояний консолидированного заказа](order-orchestration/05_order_state_diagram.png)
 
 ## Как открыть материалы
 
-1. Для быстрого просмотра схем откройте соответствующий файл `.png` прямо на GitHub.
-2. Для редактирования скачайте файл `.bpmn` и откройте его в [Camunda Modeler](https://camunda.com/download/modeler/): **File → Open File**.
-3. Общий обзор процессов находится в [bpmn.pptx](bpmn.pptx).
-4. Сравнение сервисов по критериям находится в [comparison_table.xlsx](comparison_table.xlsx).
-5. Краткие пояснения к сервисам находятся в [service.txt](service.txt).
+### BPMN
+
+1. Установите [Camunda Modeler](https://camunda.com/download/modeler/).
+2. Выберите **File → Open File**.
+3. Откройте нужный файл `.bpmn`.
+
+BPMN-файлы являются описательными и содержат `isExecutable="false"`. Они предназначены для анализа, редактирования и демонстрации, а не для непосредственного запуска в process engine.
+
+### Диаграмма состояний
+
+1. Откройте [diagrams.net](https://app.diagrams.net/) или настольный draw.io.
+2. Выберите **File → Open From → Device**.
+3. Откройте `order-orchestration/05_order_state_diagram.drawio`.
+
+### Остальные материалы
+
+- [Презентация PPTX](bpmn.pptx)
+- [Презентация PDF](bpmn.pdf)
+- [Сравнительная таблица](comparison_table.xlsx)
+- [Краткие описания сервисов](service.txt)
+- [Идея интеллектуального подбора данных](idea.txt)
+
+## Как читать BPMN
+
+- дорожки показывают ответственность пользователя, системы-агрегатора и поставщиков;
+- прямоугольник со скруглёнными углами обозначает задачу;
+- ромб с `×` обозначает выбор одного варианта;
+- ромб с `+` обозначает параллельное разветвление или объединение;
+- событие с конвертом обозначает получение асинхронного сообщения;
+- событие с часами обозначает тайм-аут;
+- подписи на стрелках задают условия перехода.
+
+Внутренние производственные процессы поставщиков не моделируются. В их дорожках показаны только внешне наблюдаемые действия: принятие подзаказа, исполнение и передача результата или сообщения об ошибке.
+
+## Документированное поведение и аналитические допущения
+
+Схемы сервисов подготовлены по открытой документации и описывают пользовательское поведение платформ. Они не являются официальными BPMN-моделями компаний.
+
+## Основные выводы
+
+- **SkyFi** предлагает наиболее простой пользовательский путь заказа данных.
+- **SkyWatch** показывает удобный API-подход, проектную структуру и работу с ролями.
+- **UP42** охватывает каталог, новую съёмку, обработку и управление данными.
+- **ArcGIS** предоставляет развитую среду публикации, анализа и совместного использования результатов.
+- Для собственного агрегатора полезно объединить простой пользовательский путь, единую модель заказа, подключаемые адаптеры поставщиков, асинхронное исполнение и прозрачный количественный учёт.
+
+## Официальные источники
+
+- [ArcGIS Online documentation](https://doc.arcgis.com/en/arcgis-online/)
+- [SkyFi](https://www.skyfi.com/)
+- [SkyFi Platform API documentation](https://app.skyfi.com/platform-api/docs)
+- [SkyWatch EarthCache documentation](https://docs.skywatch.com/)
+- [UP42 documentation](https://docs.up42.com/)
+- [BPMN 2.0 specification](https://www.omg.org/spec/BPMN/2.0/)
+
+## Ограничения
+
+Материалы предназначены для аналитической и демонстрационной работы. Они не описывают непубличные алгоритмы планирования спутников, внутреннюю работу операторов и коммерческие процедуры поставщиков. Функции и условия внешних сервисов могут изменяться, поэтому перед практическим использованием необходимо сверяться с актуальной официальной документацией.
